@@ -775,7 +775,7 @@ class DetectImage(Action):
 		self.lbl1 = Label(optionFrame, text='Screen Point:')
 		self.mouseOpFrame = MouseOptionFrame(optionFrame, self.failDefaultValue)
 		
-		self.lbl2 = Label(optionFrame, text='Retry for(ms):')
+		self.lbl2 = Label(optionFrame, text='Retry for(s):')
 		self.retryTimerEntry = NumberEntry(optionFrame, 8, 8, str(self.retryTimer))
 		
 		self.failOption.trace("w", self.change_fail_option)
@@ -806,8 +806,13 @@ class DetectImage(Action):
 			if (self.failOption.get() == 'Set Default Value'):
 				point = self.failDefaultValue
 			elif (self.failOption.get() == 'Retry'):
-				while(pt[0] is -1):
+				timer = time.time()
+				while(pt[0] is -1 and (time.time() - timer) < self.retryTimer):
 					pt = imgsearch.imagesearcharea(self.screenshot, self.scanPoint.x, self.scanPoint.y, self.scanPoint.x + self.scanWidth, self.scanPoint.y + self.scanHeight, precision=(float(self.precision)/100.0))
+				if pt[0] is -1:
+					s = "Image not found after retry, stopping."
+					messagebox.showinfo("Image Not Found", s, parent=ToplevelObserver.top())
+					return False
 				point = POINT(int(pt[0] + (width/2) + self.scanPoint.x), int(pt[1] + (height/2 + self.scanPoint.y)))
 			else:
 				s = "Image not found, stopping."
@@ -947,6 +952,7 @@ class DetectImage(Action):
 		self.storeVariable.set(data['store variable'])
 		self.failOption.set(data['fail option'])
 		self.precision = data['precision']
+		self.retryTimer = data['retry timer']
 		self.dependentVars = [data['store variable']]
 		
 	
@@ -968,6 +974,7 @@ class DetectImage(Action):
 			'store variable': self.storeVariable.get(),
 			'fail option': self.failOption.get(),
 			'precision': self.precision,
+			'retry timer': self.retryTimer,
 			'description': description}  
 		return data
 		

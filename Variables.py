@@ -473,7 +473,7 @@ class VariableEditor(Toplevel):
 		
 		VariableList.commit()
 		if(self.action is not None):
-			self.action.refresh_options()
+			self.action.refresh_variable_options()
 		self.quit()
 		
 		
